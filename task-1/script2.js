@@ -4,14 +4,14 @@ var w = d3.select('.plot').node().clientWidth,
 d3.csv('../data/hubway_trips_reduced.csv',parse,dataLoaded);
 
 function dataLoaded(err,rows){
-	
-	var timeSeries1 = d3.timeSeries()
-	.width(w)
-	.height(h)
-    .timeRange([new Date(2011,6,16),new Date(2013,11,15)])
-	.value(function(d){ return d.startTime; })
-	.maxValue(60)
-    .binSize(d3.time.week);
+
+    var timeSeries = d3.timeSeries()
+        .width(w)
+        .height(h)
+        .timeRange([new Date(2011,6,16),new Date(2013,11,15)])
+        .value(function(d){ return d.startTime; })
+        .maxValue(60)
+        .binSize(d3.time.week);
 
     var tripsByStation = d3.nest()
         .key(function(d){return d.startStation})
@@ -20,24 +20,26 @@ function dataLoaded(err,rows){
     var plots = d3.select('.container').selectAll('.plot')
         .data(tripsByStation);
 
+//	console.log(plots);
+
     plots
         .enter()
         .append('div').attr('class','plot');
 
     plots
         .each(function(d){
-            d3.select(this)
-                .datum(d.values)
-                .call(timeSeries1)
+            d3.select(this).datum(d.values)
+                .call(timeSeries)
                 .append('p')
-                .html(d.key);
-        })	
+                .text(d.key);
+
+        })
 
 }
 
 function parse(d){
     if(+d.duration<0) return;
-	
+
     return {
         duration: +d.duration,
         startTime: parseDate(d.start_date),
